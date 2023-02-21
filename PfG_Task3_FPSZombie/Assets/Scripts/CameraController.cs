@@ -55,19 +55,7 @@ public class CameraController : MonoBehaviour
 
         transform.position = GetTargetPosition() - distance * transform.forward;
     }
-
-    private void FixedUpdate()
-    {
-        Vector3 delta;
-
-        Vector3 camForward = cam.forward;
-        camForward.y = 0;
-        camForward.Normalize();
-
-        Vector3 camRight = cam.right;
-        
-        delta = (moveInput.x * camRight + moveInput.y * camForward) * camSpeed;
-    }
+    
 
     Vector3 GetTargetPosition()
     {

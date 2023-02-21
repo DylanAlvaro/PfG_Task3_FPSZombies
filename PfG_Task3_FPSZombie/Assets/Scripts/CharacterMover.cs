@@ -10,6 +10,7 @@ public class CharacterMover : MonoBehaviour
     public float jumpVelocity = 10;
     public Vector3 velocity;
 
+    public Transform cam;
 
     private CharacterController characterController;
     private Animator animator;
@@ -23,6 +24,7 @@ public class CharacterMover : MonoBehaviour
     {
         characterController = GetComponent<CharacterController>();
         animator = GetComponentInChildren<Animator>();
+        cam = Camera.main.transform;
     }
 
     // Update is called once per frame
@@ -36,12 +38,24 @@ public class CharacterMover : MonoBehaviour
         animator.SetBool("Jump", !isGrounded);
     }
 
+    public Vector3 hitDir;
+    private void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        hitDir = hit.point - transform.position;
+    }
+
     private void FixedUpdate()
     {
         jumpVelocity = Mathf.Sqrt(2 * Physics.gravity.magnitude * jumpVelocity);
-        
+
         Vector3 delta;
-        delta = (moveInput.x * Vector3.right + moveInput.y * Vector3.forward) * movementSpeed;
+        Vector3 camForward = cam.forward;
+        camForward.y = 0;
+        camForward.Normalize();
+
+        Vector3 camRight = cam.right;
+        
+        delta = (moveInput.x * camRight + moveInput.y * camForward) * movementSpeed;
 
         if(isGrounded || moveInput.x != 0 || moveInput.y != 0)
         {
@@ -60,7 +74,22 @@ public class CharacterMover : MonoBehaviour
 
         velocity += Physics.gravity * Time.fixedDeltaTime;
 
-       // transform.forward = camForward;
+        if(!isGrounded)
+            hitDir = Vector3.zero;
+
+        if(moveInput.x == 0 && moveInput.y == 0)
+        {
+            Vector3 horizontalHitDir = hitDir;
+            horizontalHitDir.y = 0;
+            float displacement = horizontalHitDir.magnitude;
+
+            if(displacement > 0)
+            {
+                velocity -= 0.2f * horizontalHitDir / displacement;
+            }
+        }
+
+       transform.forward = camForward;
         
         //delta += velocity * Time.fixedDeltaTime;
 
